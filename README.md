@@ -25,9 +25,27 @@ jlong           | "i ate pizza yesterday"                                       
 jlong           | I'll remember that you ate pizza yesterday.                                                                                     +| ASSISTANT | 2026-04-13 22:59:38.567
 |                                                                                                                                 +|           |
 
+2. Actuator module collects metrics - token usage from code and using prometheus it can be shipped to Time Series Database like prometheus, DataDog etc
+
+3.Retrieval Augmented Generation (RAG) with Vector Store
+
+3.1  all the data present in data.sql file into Dog Repository entities will be Loaded to the vector_store table in postgresML. This is done inside the instance initiliazation process inside the constructor. 
+We also need to configure a QuestionAnswerAdvisor so that the chatClient will know to store the documents in the vector
+
+------------------------------------
+SETUP
 Run Docker Container - PostgresSQL
 chmod +x run.sh
 ./run.sh
 
+opens a Postgres terminal inside that Docker container, connected to the postgresml database, as the postgres user.
+docker exec -it -u postgres objective_easley psql -d postgresml
+
+
+
 References:
 https://spring.io/blog/2025/05/20/your-first-spring-ai-1
+
+https://github.com/joshlong-attic/2025-05-16-anthropic/tree/main
+
+Tech stack: postgres, postgresML, Docker
