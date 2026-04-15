@@ -55,14 +55,13 @@ public class AdoptionsApplication {
                 .builder(chatMessageWindow)
                 .build();
     }
-//
-//    @Bean
-//    McpSyncClient mcpSyncClient() {
-//        var mcp = McpClient
-//                .sync(HttpClientSseClientTransport.builder("http://localhost:8081").build()).build();
-//        mcp.initialize();
-//        return mcp;
-//    }
+
+    @Bean
+    McpSyncClient mcpSyncClient() {
+        var mcp = McpClient.sync(HttpClientSseClientTransport.builder("http://localhost:8081").build()).build();
+        mcp.initialize();
+        return mcp;
+    }
 }
 
 @Controller
@@ -71,7 +70,7 @@ class AdoptionsController {
 
     private final ChatClient ai;
 
-    AdoptionsController (JdbcClient db, PromptChatMemoryAdvisor promptChatMemoryAdvisor, ChatClient.Builder ai, DogRepository repository, VectorStore vectorStore, DogAdoptionScheduler dogAdoptionScheduler) {
+    AdoptionsController (JdbcClient db, PromptChatMemoryAdvisor promptChatMemoryAdvisor, ChatClient.Builder ai, DogRepository repository, VectorStore vectorStore, McpSyncClient mcpSyncClient) {
 
         var count = db.sql("select count(*) from vector_store").query(Integer.class).single();
         if (count == 0) {
@@ -86,7 +85,7 @@ class AdoptionsController {
                 You are an AI powered assistant to help people adopt a dog from the adoption agency named Pooch Palace with locations in Rio de Janeiro, Mexico City, Seoul, Tokyo, Singapore, New York City, Amsterdam, Paris, Mumbai, New Delhi, Barcelona, London, and San Francisco. Information about the dogs available will be presented below. If there is no information, then return a polite response suggesting we don't have any dogs available.
                 """;
         this.ai = ai
-                .defaultTools(dogAdoptionScheduler)
+                .defaultToolCallbacks(new SyncMcpToolCallbackProvider(mcpSyncClient))
                 .defaultAdvisors(promptChatMemoryAdvisor, new QuestionAnswerAdvisor(vectorStore))
                 .defaultSystem(system)
                 .build();
@@ -111,18 +110,3 @@ interface DogRepository extends ListCrudRepository<Dog, Integer> {
 record Dog(@Id int id, String name, String owner, String description) {
 }
 
-
-
-@Component
-class DogAdoptionScheduler {
-
-    @Tool(description = "schedule an appointment to pickup or adopt a " +
-            "dog from a Pooch Palace location")
-    String schedule(int dogId, String dogName) {
-        System.out.println("Scheduling adoption for dog " + dogName);
-        return Instant
-                .now()
-                .plus(3, ChronoUnit.DAYS)
-                .toString();
-    }
-}
