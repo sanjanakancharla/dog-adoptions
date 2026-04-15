@@ -24,3 +24,10 @@ jlong           | "i ate pizza yesterday"                                       
 jlong           | "i ate pizza yesterday"                                                                                                          | USER      | 2026-04-13 22:59:38.566
 jlong           | I'll remember that you ate pizza yesterday.                                                                                     +| ASSISTANT | 2026-04-13 22:59:38.567
 |                                                                                                                                 +|           |
+
+Run Docker Container - PostgresSQL
+chmod +x run.sh
+./run.sh
+
+References:
+https://spring.io/blog/2025/05/20/your-first-spring-ai-1

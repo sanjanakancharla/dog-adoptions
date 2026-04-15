@@ -67,41 +67,21 @@ class AdoptionsController {
 
     private final ChatClient ai;
 
-    AdoptionsController (ChatClient.Builder ai, PromptChatMemoryAdvisor promptChatMemoryAdvisor) {
+   /* AdoptionsController (ChatClient.Builder ai, PromptChatMemoryAdvisor promptChatMemoryAdvisor) {
         this.ai = ai
                 .defaultAdvisors(promptChatMemoryAdvisor)
                 .build();
+    }*/
+
+    AdoptionsController (PromptChatMemoryAdvisor promptChatMemoryAdvisor, ChatClient.Builder ai) {
+        var system = """
+                You are an AI powered assistant to help people adopt a dog from the adoption agency named Pooch Palace with locations in Rio de Janeiro, Mexico City, Seoul, Tokyo, Singapore, New York City, Amsterdam, Paris, Mumbai, New Delhi, Barcelona, London, and San Francisco. Information about the dogs available will be presented below. If there is no information, then return a polite response suggesting we don't have any dogs available.
+                """;
+        this.ai = ai
+                .defaultSystem(system)
+                .build();
     }
 
-//    AdoptionsController(JdbcClient db,
-//
-//                        McpSyncClient mcpSyncClient,
-//                        PromptChatMemoryAdvisor promptChatMemoryAdvisor,
-//                        ChatClient.Builder ai,
-//                        DogRepository repository,
-//                        VectorStore vectorStore) {
-//
-//        var count = db
-//                .sql("select count(*) from vector_store")
-//                .query(Integer.class)
-//                .single();
-//        if (count == 0) {
-//            repository.findAll().forEach(dog -> {
-//                var dogument = new Document("id: %s, name: %s, description: %s".formatted(
-//                        dog.id(), dog.name(), dog.description()
-//                ));
-//                vectorStore.add(List.of(dogument));
-//            });
-//        }
-//        var system = """
-//                You are an AI powered assistant to help people adopt a dog from the adoption agency named Pooch Palace with locations in Rio de Janeiro, Mexico City, Seoul, Tokyo, Singapore, Paris, Mumbai, New Delhi, Barcelona, London, and San Francisco. Information about the dogs available will be presented below. If there is no information, then return a polite response suggesting we don't have any dogs available.
-//                """;
-//        this.ai = ai
-//                .defaultToolCallbacks(new SyncMcpToolCallbackProvider(mcpSyncClient))
-//                .defaultAdvisors(promptChatMemoryAdvisor, new QuestionAnswerAdvisor(vectorStore))
-//                .defaultSystem(system)
-//                .build();
-//    }
 
     @GetMapping("/{user}/assistant")
     String inquire(@PathVariable String user, @RequestParam String question) {
