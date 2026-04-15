@@ -35,22 +35,22 @@ public class AdoptionsApplication {
         SpringApplication.run(AdoptionsApplication.class, args);
     }
 
-//    @Bean
-//    PromptChatMemoryAdvisor promptChatMemoryAdvisor(DataSource dataSource) {
-//        var jdbc = JdbcChatMemoryRepository
-//                .builder()
-//                .dataSource(dataSource)
-//                .build();
-//
-//        var chatMessageWindow = MessageWindowChatMemory
-//                .builder()
-//                .chatMemoryRepository(jdbc)
-//                .build();
-//
-//        return PromptChatMemoryAdvisor
-//                .builder(chatMessageWindow)
-//                .build();
-//    }
+    @Bean
+    PromptChatMemoryAdvisor promptChatMemoryAdvisor(DataSource dataSource) {
+        var jdbc = JdbcChatMemoryRepository
+                .builder()
+                .dataSource(dataSource)
+                .build();
+
+        var chatMessageWindow = MessageWindowChatMemory
+                .builder()
+                .chatMemoryRepository(jdbc)
+                .build();
+
+        return PromptChatMemoryAdvisor
+                .builder(chatMessageWindow)
+                .build();
+    }
 //
 //    @Bean
 //    McpSyncClient mcpSyncClient() {
@@ -67,8 +67,10 @@ class AdoptionsController {
 
     private final ChatClient ai;
 
-    AdoptionsController (ChatClient.Builder ai  ) {
-        this.ai = ai.build();
+    AdoptionsController (ChatClient.Builder ai, PromptChatMemoryAdvisor promptChatMemoryAdvisor) {
+        this.ai = ai
+                .defaultAdvisors(promptChatMemoryAdvisor)
+                .build();
     }
 
 //    AdoptionsController(JdbcClient db,
@@ -106,7 +108,7 @@ class AdoptionsController {
         return ai
                 .prompt()
                 .user(question)
-              //  .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, user))
+                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, user))
                 .call()
                 .content();
 
