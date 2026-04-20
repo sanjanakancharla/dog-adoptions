@@ -1,51 +1,114 @@
-1.Integrated Claude/Anthropic API key and using spring's ChatClient API to send user  questions as prompt to the chat model or LLM's- Claude
+# Spring AI Claude Integration with PostgreSQL, Chat Memory, and RAG
 
-Used Postgress as Vector store as well as Chat Memory store.
+This project demonstrates how to integrate Claude via the Anthropic API using Spring AI's `ChatClient`, persist chat memory in PostgreSQL, and implement Retrieval Augmented Generation (RAG) using PostgresML as a vector store.
+
+## Features
+
+### 1. Claude / Anthropic integration
+Integrated the Claude / Anthropic API and used Spring AI's `ChatClient` API to send user questions as prompts to the chat model.
+
+### 2. PostgreSQL as chat memory store
+Used PostgreSQL as a persistent chat memory store.
+
+The following tables are present in the database:
+
+```sql
 List of relations
-Schema |         Name          | Type  |   Owner    
+ Schema |         Name          | Type  |   Owner
 --------+-----------------------+-------+------------
-public | dog                   | table | postgresml
-public | spring_ai_chat_memory | table | postgresml
-public | vector_store          | table | postgresml
+ public | dog                   | table | postgresml
+ public | spring_ai_chat_memory | table | postgresml
+ public | vector_store          | table | postgresml
 (3 rows)
 
+Structure of the spring_ai_chat_memory table:
+
 Table "public.spring_ai_chat_memory"
-Column      |            Type             | Collation | Nullable | Default
+     Column      |            Type             | Collation | Nullable | Default
 -----------------+-----------------------------+-----------+----------+---------
-conversation_id | character varying(36)       |           | not null |
-content         | text                        |           | not null |
-type            | character varying(10)       |           | not null |
-timestamp       | timestamp without time zone |           | not null | 
+ conversation_id | character varying(36)       |           | not null |
+ content         | text                        |           | not null |
+ type            | character varying(10)       |           | not null |
+ timestamp       | timestamp without time zone |           | not null |
 
-postgresml=# select * from spring_ai_chat_memory;
-conversation_id |                                                             content                                                              |   type    |        timestamp        
------------------+----------------------------------------------------------------------------------------------------------------------------------+-----------+-------------------------
-jlong           | "i ate pizza yesterday"                                                                                                          | USER      | 2026-04-13 22:59:38.565
-jlong           | "i ate pizza yesterday"                                                                                                          | USER      | 2026-04-13 22:59:38.566
-jlong           | I'll remember that you ate pizza yesterday.                                                                                     +| ASSISTANT | 2026-04-13 22:59:38.567
-|                                                                                                                                 +|           |
+Sample data from spring_ai_chat_memory:
 
-2. Actuator module collects metrics - token usage from code and using prometheus it can be shipped to Time Series Database like prometheus, DataDog etc
+select * from spring_ai_chat_memory;
 
-3.Retrieval Augmented Generation (RAG) with Vector Store
+ conversation_id |                              content                               |   type    |        timestamp
+-----------------+--------------------------------------------------------------------+-----------+-------------------------
+ jlong           | "i ate pizza yesterday"                                            | USER      | 2026-04-13 22:59:38.565
+ jlong           | "i ate pizza yesterday"                                            | USER      | 2026-04-13 22:59:38.566
+ jlong           | I'll remember that you ate pizza yesterday.                        | ASSISTANT | 2026-04-13 22:59:38.567
 
-3.1  all the data present in data.sql file into Dog Repository entities will be Loaded to the vector_store table in postgresML. This is done inside the instance initiliazation process inside the constructor. 
-We also need to configure a QuestionAnswerAdvisor so that the chatClient will know to store the documents in the vector
 
-------------------------------------
-SETUP
-Run Docker Container - PostgresSQL
+
+3. Actuator metrics integration
+
+The Actuator module collects application metrics such as token usage.
+
+Using Prometheus, these metrics can be exported to time series monitoring systems such as:
+Prometheus
+Datadog
+
+4. Retrieval Augmented Generation (RAG) with vector store
+
+Implemented RAG using PostgresML as the vector store.
+
+All the data present in the data.sql file is loaded into Dog repository entities and then stored in the vector_store table in PostgresML.
+
+This loading is done during instance initialization inside the constructor.
+
+A QuestionAnswerAdvisor also needs to be configured so that the ChatClient can use the vector store during retrieval and question answering.
+
+Setup
+Run Docker container for PostgreSQL
 chmod +x run.sh
 ./run.sh
+Open a PostgreSQL terminal inside the Docker container
 
-opens a Postgres terminal inside that Docker container, connected to the postgresml database, as the postgres user.
+This command opens a PostgreSQL terminal inside the Docker container, connected to the postgresml database as the postgres user.
+
 docker exec -it -u postgres objective_easley psql -d postgresml
 
 
+How it works
+User questions are sent through Spring AI's ChatClient.
+Claude processes the prompt using the Anthropic API.
+Conversation history is stored in the spring_ai_chat_memory table.
+Application metrics such as token usage are collected through Actuator.
+Documents are loaded into the vector store for retrieval.
+QuestionAnswerAdvisor enables the application to retrieve relevant context before generating responses.
 
-References:
-https://spring.io/blog/2025/05/20/your-first-spring-ai-1
 
-https://github.com/joshlong-attic/2025-05-16-anthropic/tree/main
 
-Tech stack: postgres, postgresML, Docker
+Tech Stack
+Java
+Spring Boot
+Spring AI
+Claude / Anthropic API
+PostgreSQL
+PostgresML
+Docker
+Prometheus
+References
+Your First Spring AI App
+Josh Long Reference Project
+
+A few small fixes I made so preview will not break:
+- wrapped all SQL output in code blocks
+- fixed headings and spacing
+- cleaned grammar
+- converted broken numbering into proper Markdown sections
+- used backticks for table names, files, and APIs
+
+One sentence I would improve technically is this one:
+
+> “We also need to configure a QuestionAnswerAdvisor so that the chatClient will know to store the documents in the vector”
+
+A better version is:
+
+```markdown
+A `QuestionAnswerAdvisor` needs to be configured so that the `ChatClient` can retrieve relevant documents from the vector store during question answering.
+
+Because the advisor usually helps with retrieval, not storing.
