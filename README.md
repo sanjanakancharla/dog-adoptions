@@ -91,7 +91,12 @@ PostgreSQL
 PostgresML
 Docker
 Prometheus
+
+
 References
+https://github.com/joshlong-attic/2025-05-16-anthropic/tree/main
+https://spring.io/blog/2025/05/20/your-first-spring-ai-1
+
 Your First Spring AI App
 Josh Long Reference Project
 
